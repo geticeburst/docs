@@ -1,0 +1,83 @@
+---
+title: 'Architecture'
+description: '"This will never work". We have heard it many times before.'
+---
+
+<img
+  style={{ borderRadius: '0.5rem' }}
+  src="/images/arch.svg"
+/>
+
+## Concerns raised about our architecture choices
+
+### DuckDB is not built for large datasets
+
+Iceberg's time travel and version travel queries, along with DuckDB's parallel query processing, and in-memory representation with Arrow, helps us deliver faster query processing even with larger datasets. The key takeaway is DuckDB is highly effective when data is broken down into 'smaller chunks' rather than running large scan queries on a dataset.
+
+### DuckDB is designed to run on a single machine
+
+That means your data has to fit within that single machine otherwise, it doesn’t work. That said, there are very powerful machines out there. Just by looking at AWS offerings, you can have an instance with up to 12288 GiB of memory and 448 vCPUs that will be more than enough for 99% of use cases.
+
+## How iceburst works under the hood?
+
+### Collect
+
+Aware that there are many ways to instrument your systems, iceburst takes a radical approach: you can emit data in any format. OpenTelemetry, Prometheus, StatsD: you name it. And, yes, 100% PromQL and SQL compatible.
+
+  <Accordion icon="rectangle-terminal" title="Iceburst Agent">
+    The iceburst Agent is under development and will be launching soon. 
+  </Accordion>
+
+### Transform
+
+The collected data is forwarded to a streaming data pipeline which sends the data to a stream processing application like Apache Flink. Flink transforms the unstructured JSON and text data to Parquet files and ingests in S3 in Iceberg table format.
+
+#### Data streaming
+
+Start with Amazon Kinesis Data Streams using the OpenTelemetry Kinesis Exporter and scale your pipeline as needed. As you grow, consider upgrading to a managed streaming data pipeline like Redpanda, Confluent, or Warpstream. Eventually, if required, you may consider running your own Kafka cluster.
+
+#### Stream processing
+
+At startup, when the data volume is low, Amazon Data Firehose is a suitable option. As you scale up, you can upgrade to services like Decodable, Ververica, or Amazon Managed Services for Apache Flink. Eventually, you can transition to running your own Flink cluster.
+
+#### Data ingestion
+
+Streaming data from Flink (or Firehose) is ingested directly into S3 Express One Zone where they’re retained for 24 hours before transitioned to Standard tier and retained for 30 days.
+
+### Query
+
+#### Reader nodes
+
+DuckDB installed on EC2 which is constantly querying data and returns partial aggregations which are re-aggregated by DuckDB running on leaf nodes. Reader nodes also handles triggering alerts and notifications once an anomaly is detected. This is how we enable continuous monitoring of S3 data even when there are no requests from the frontend.
+
+#### Leaf nodes
+
+Whenever a frontend user logs in, a Lambda function is triggered that fetches the partial aggregates exposed by the reader nodes and returns it to the user. The leaf nodes are stateless and can be scaled up or down without issues. We don’t launch a lambda function whenever a new user logs in, any unutilized lambda function could also be used which will be decided on query time.
+
+## Data tiering in S3
+
+#### S3 Express One Zone ~ 1 day
+
+Streaming data from Flink is ingested directly into Express One Zone where they’re retained for 24 hours before moving to next tier. S3 Express One Zone provides consistent single-digit millisecond request latency on hundreds of thousands of transactions per second.
+
+#### S3 Standard ~ 1 month
+
+Once data has crossed 24 hours in Express One Zone, it is moved to Standard Tier which provides reduced pricing without much implications on the query performance. 
+
+#### S3 Glacier Instant Retrieval ~ 1 year
+
+S3 Glacier Instant Retrieval delivers the lowest-cost storage for long-lived data that is rarely accessed and requires milliseconds retrieval.
+
+<Tip>
+
+Imagine you generate 1 TB of data every day and your organization has a retention policy of 90 days.
+
+| Storage Tier | Storage Cost  | PUT Requests  | GET Requests  | Assumptions                    | 
+| -----------  | ------------  | ------------- | ------------- | ------------------------------ | 
+| Express One  | $5.28         | $6.57         | $200          | 1B GET & 2.63M PUT requests    |
+| Standard     | $22.75        | $13.14        | $40           | 100M GET & 2.63M PUT requests  |
+| Glacier      | $7.92         | $52.56        | $100          | 10M GET & 2.63M PUT requests   |
+
+Overall, you are looking at a $448.22 per month S3 cost for 1 TB data per day or 30 TB data per month retained for 90 days.
+
+</Tip>

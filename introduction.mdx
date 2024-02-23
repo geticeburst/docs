@@ -1,71 +1,78 @@
 ---
-title: Introduction
-description: "Welcome to the home of your new documentation"
+title: What is iceburst?
+description: "iceburst is a real-time data lake for monitoring and security."
 ---
 
-<img
-  className="block dark:hidden"
-  src="/images/hero-light.svg"
-  alt="Hero Light"
-/>
-<img
-  className="hidden dark:block"
-  src="/images/hero-dark.svg"
-  alt="Hero Dark"
-/>
+<iframe width="700" height="350" src="https://www.youtube.com/embed/PNlZ9LdKuM0?si=GPwVOyfLSMizomHT" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"></iframe>
 
-## Setting up
+## Why use iceburst?
 
-The first step to world-class documentation is setting up your editing environnments.
+iceburst lets you easily monitor your infrastructure, applications, databases, networks, data streams, microservices & more - all in one unified platform.
+
+**Built directly on top of S3**
+
+S3 as a storage layer architecture enables us to offer so many advantages out-of-the-box like separation of storage and compute, time travel, fault tolerance, infinite concurrency reads, fast recovery, and a better developer experience.
+
+**Milliseconds retrieval**
+
+Streaming data from Apache Flink is ingested directly into Express One Zone where they're retained for 24 hours before transitioning to Standard tier.
+
+S3 Express One Zone provides consistent single-digit millisecond request latency on hundreds of thousands of transactions per second.
+
+**Zero egress cost**
+
+You don't incur any data transfer cost when data is transferred from an Amazon S3 bucket to any AWS Service(s) within the same AWS Region as the S3 bucket (including to a different account in the same AWS Region).
+
+That's why we launch compute resources in the same region as your S3 bucket.
+
+**Added layer of privacy and security**
+
+Any sensitive data leaked knowingly or unknowingly into logs or traces, stays within the customer’s boundary and not exposed. And it happens so frequently.
+
+## How's iceburst different?
+
+**Build composable data systems**
+
+Build composable data systems that grows with you, just like an iceberg. It's a significant second order effect as your data volume grows everyday. Before you know it, you could be sitting on terabytes of data, paying top dollars, only to get substandard query response times.
+
+**Build a culture of deep observability**
+
+Build a culture of deep observability in your company from Day One. We want developers to instrument and log everything instead of worrying about how much one extra time series will cost per month.
+
+**Manage runaway observability costs**
+
+Iceburst allows you to overhaul your observability systems using AWS S3, a durable, scalable, and cost-efficient data store. The outcome: lowered operational costs, enhanced performance, and no unexpected overages.
+
+
+## Technical deep dives
 
 <CardGroup cols={2}>
   <Card
-    title="Edit Your Docs"
-    icon="pen-to-square"
-    href="https://mintlify.com/docs/quickstart"
-  >
-    Get your docs set up locally for easy development
-  </Card>
-  <Card
-    title="Preview Changes"
-    icon="image"
-    href="https://mintlify.com/docs/development"
-  >
-    Preview your changes before you push to make sure they're perfect
-  </Card>
-</CardGroup>
-
-## Make it yours
-
-Update your docs to your brand and add valuable content for the best user conversion.
-
-<CardGroup cols={2}>
-  <Card
-    title="Customize Style"
+    title="Data collection"
     icon="palette"
     href="https://mintlify.com/docs/settings/global"
   >
-    Customize your docs to your company's colors and brands
+    StatsD, Prometheus, OpenTelemetry: emit data in any format.
   </Card>
   <Card
-    title="Reference APIs"
+    title="Getting data to S3"
     icon="code"
     href="https://mintlify.com/docs/api-playground/openapi"
   >
-    Automatically generate endpoints from an OpenAPI spec
+    Pick your streaming and stream processing system of choice.
   </Card>
   <Card
-    title="Add Components"
+    title="Data tiering in S3"
     icon="screwdriver-wrench"
     href="https://mintlify.com/docs/components/accordion"
   >
-    Build interactive features and designs to guide your users
+    Automatic data tiering policies optimized for serving large scan and aggregation queries.
   </Card>
   <Card
-    title="Get Inspiration"
+    title="Querying with DuckDB"
     icon="stars"
     href="https://mintlify.com/showcase"
   >
-    Check out our showcase of our favorite documentation
+    DuckDB is not built for big datasets. But we love its speed and efficiency. And here's how we make it work.
   </Card>
 </CardGroup>
